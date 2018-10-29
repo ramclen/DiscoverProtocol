@@ -1,0 +1,16 @@
+{ 
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "../../built/local/tsc.js",
+        "sourceMap": true,
+        "target": "es6"
+    },
+    "include": [
+        "**/*"
+    ],
+    "exclude": [
+        "node_modules",
+    ]
+}
