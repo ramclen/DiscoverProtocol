@@ -14,7 +14,8 @@
     "typescript": "^3.1.3"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register test/**/*.Spec.ts"
+    "test": "mocha --require ts-node/register test/**/*.Spec.ts ",
+    "test:watch": "mocha --require ts-node/register --watch-extensions ts --watch test/**/*.Spec.ts "
   },
   "author": "Cristopher Lopez",
   "license": "ISC"
