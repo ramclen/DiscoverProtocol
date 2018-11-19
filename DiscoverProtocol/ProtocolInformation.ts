@@ -1,19 +1,19 @@
-const head = 'DiscoverProtocol';
+const protocol = 'DiscoverProtocol';
 
 export const messages = {
     client : {
-        discover: name => formatMessage('EHLO', name),
-        handshake: (name, askingID) => formatMessage(`AYT ${askingID}`, name),
-        requestInformation: (name) => formatMessage(`GET INFORMATION`, name),
+        discover: serviceName => formatMessage('EHLO', serviceName),
+        handshake: (serviceName, askingID) => formatMessage(`AYT ${askingID}`, serviceName),
+        requestInformation: (serviceName) => formatMessage(`GET INFORMATION`, serviceName),
     },
     server : {
-        discoverReceived: name => `${head}:EHLO OK:${name}`,
-        acceptHandshake: (name, askingID) => formatMessage(`OK ${askingID}`, name),
-        rejectHandsake: (name, askingID) => formatMessage(`REJECT ${askingID}`, name),
-        sendInformation: (name, information) => formatMessage(`INFO ${JSON.stringify(information)}`, name)
+        discoverReceived: serviceName => `${protocol}:EHLO OK:${serviceName}`,
+        acceptHandshake: (serviceName, askingID) => formatMessage(`OK ${askingID}`, serviceName),
+        rejectHandsake: (serviceName, askingID) => formatMessage(`REJECT ${askingID}`, serviceName),
+        sendInformation: (serviceName, information) => formatMessage(`INFO ${JSON.stringify(information)}`, serviceName)
     },
     common : {
-        ACK: (name) => formatMessage(`ACK`, name),
+        ACK: (serviceName) => formatMessage(`ACK`, serviceName),
     }
 }
 
@@ -30,5 +30,5 @@ export enum ProtocolSteps {
 }
 
 function formatMessage(message: string, serviceName: string): string {
-    return `${head}:${message}:${serviceName}`
+    return `${protocol}:${message}:${serviceName}`
 }

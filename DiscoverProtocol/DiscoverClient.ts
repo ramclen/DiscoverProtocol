@@ -104,28 +104,16 @@ export class ClientDiscoverProtocol {
     public finish: boolean = false;
     public serverConnection: ClientInfo;
     private step: ProtocolSteps = ProtocolSteps.DISCOVER;
-    private name: string = 'DISCOVER'; ;
+    private name: string;
     private id: string;
+    public actionMap: any;
+    private expectedStep: any;
 
-    actionMap: any = {
-        [messages.server.discoverReceived(this.name)] : this.handsake.bind(this),
-        [messages.server.acceptHandshake(this.name, this.id)] : this.requestInformation.bind(this),
-        [messages.server.sendInformation(this.name, this.id)] : this.requestInformation.bind(this),
-        [messages.common.ACK(this.name)]: this.finishProtocol.bind(this),
-        default: this.default.bind(this),
-    };
-
-    private expectedStep: any = {
-        [messages.server.discoverReceived(this.name)] : ProtocolSteps.DISCOVER,
-        [messages.server.acceptHandshake(this.name, this.id)] : ProtocolSteps.HANDSHAKE,
-        [messages.server.sendInformation(this.name, this.id)] : ProtocolSteps.HANDSHAKE,
-        [messages.common.ACK(this.name)]: ProtocolSteps.ACK,
-        default: this.default.bind(this),
-    };
-
-    constructor(id: string) {
+    constructor(id: string, serviceName: string) {
         this.id = id;
+        this.name = serviceName;
         this.serverConnection = new ClientInfo(undefined, port.server, ProtocolSteps.DISCOVER);
+        this.buildMaps()
     }
 
 
@@ -136,12 +124,30 @@ export class ClientDiscoverProtocol {
     }
 
     public checkStep(msg: string, serverInfo: ClientInfo): boolean {
-        return this.actionMap[msg] && this.checkProtocol(serverInfo, this.expectedStep[msg]);
+        return (this.actionMap[msg] !== undefined) && this.checkProtocol(serverInfo, this.expectedStep[msg]);
     }
 
     public connect(): string {
         return messages.client.discover(this.name)
     }
+
+    buildMaps(): any {
+        this.actionMap = {
+            [messages.server.discoverReceived(this.name)] : this.handsake.bind(this),
+            [messages.server.acceptHandshake(this.name, this.id)] : this.requestInformation.bind(this),
+            [messages.common.ACK(this.name)]: this.finishProtocol.bind(this),
+            default: this.default.bind(this),
+        };
+
+        this.expectedStep = {
+            [messages.server.discoverReceived(this.name)] : ProtocolSteps.DISCOVER,
+            [messages.server.acceptHandshake(this.name, this.id)] : ProtocolSteps.HANDSHAKE,
+            [messages.server.sendInformation(this.name, this.id)] : ProtocolSteps.HANDSHAKE,
+            [messages.common.ACK(this.name)]: ProtocolSteps.ACK,
+            default: this.default.bind(this),
+        };
+    }
+
     // cambiar client connection a server connection y cambiar el nombre de la clase
     private handsake(msg: string, clientInfo: ClientInfo): string {
         this.serverConnection = clientInfo;
