@@ -101,15 +101,18 @@ class Timeout {
     }
 
     start(): any {
-        this.timeout = setTimeout(() => this.action(), 3000)
+        if (!this.timeout) {
+            this.timeout = setTimeout(() => this.action(), 3000)
+        }
     }
 
     stop(): void {
         clearTimeout(this.timeout)
+        this.timeout = undefined;
     }
 
     refresh(): any {
-        clearTimeout(this.timeout);
+        this.stop()
         this.start()
     }
 }
@@ -142,7 +145,7 @@ export class ClientDiscoverProtocol {
     }
 
     public isFinished(): boolean {
-        return this.step === (ProtocolSteps.ACK + 1)
+        return this.step === ProtocolSteps.ACK
     }
 
     public connect(): string {
