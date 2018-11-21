@@ -27,8 +27,17 @@ export default class DiscoverClient {
             console.log('UDP Client listening on ' + address);
             this.connection.setBroadcast(true);
         });
+
         this.process = this.runDiscoverProcess()
-        this.connection.on('message', (msg, rinfo) => this.runProtocol(msg, rinfo))
+
+        this.connection.on('message', (msg, rinfo) => {
+            if (!this.clientDiscoverProtocol.isFinished()) {
+                this.runProtocol(msg, rinfo)
+            } else {
+                this.timeout.stop()
+                console.log('Protocol Finished')
+            }
+        })
     }
 
     private runProtocol(msg: Buffer, rinfo: AddressInfo): void {
@@ -49,6 +58,7 @@ export default class DiscoverClient {
         if (!this.process && this.clientDiscoverProtocol.checkStep(msg.toString(), serverInfo)) {
             this.timeout.refresh();
         }
+
         setTimeout(() => {
             let message;
             if (this.clientDiscoverProtocol.checkStep(msg.toString(), serverInfo)) {
@@ -91,11 +101,18 @@ class Timeout {
     }
 
     start(): any {
-        this.timeout = setTimeout(() => this.action(), 3000)
+        if (!this.timeout) {
+            this.timeout = setTimeout(() => this.action(), 3000)
+        }
+    }
+
+    stop(): void {
+        clearTimeout(this.timeout)
+        this.timeout = undefined;
     }
 
     refresh(): any {
-        clearTimeout(this.timeout);
+        this.stop()
         this.start()
     }
 }
@@ -125,6 +142,10 @@ export class ClientDiscoverProtocol {
 
     public checkStep(msg: string, serverInfo: ClientInfo): boolean {
         return (this.actionMap[msg] !== undefined) && this.checkProtocol(serverInfo, this.expectedStep[msg]);
+    }
+
+    public isFinished(): boolean {
+        return this.step === ProtocolSteps.ACK
     }
 
     public connect(): string {

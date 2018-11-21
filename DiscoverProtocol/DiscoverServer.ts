@@ -80,7 +80,10 @@ export class ServerDiscoverProtocol {
     }
 
     private finishConnection(clientInfo: ClientInfo): string {
-        return this.executeProtocolStep(messages.common.ACK(this.name), clientInfo, ProtocolSteps.REQUEST_INFORMATION);
+        const connection = this.getClientConnection(clientInfo);
+        const message =  this.executeProtocolStep(messages.common.ACK(this.name), clientInfo, ProtocolSteps.REQUEST_INFORMATION);
+        this.removeConnection(connection);
+        return message;
     }
 
     private sendInformation(clientInfo: ClientInfo): string {
@@ -125,8 +128,12 @@ export class ServerDiscoverProtocol {
     }
 
     private updateConnection(clientInfo: ClientInfo): any {
-        this.connections = this.connections.filter(element => element.sameClient(clientInfo))
+        this.removeConnection(clientInfo);
         this.connections.push(clientInfo);
+    }
+
+    private removeConnection(connection: ClientInfo): void {
+        this.connections = this.connections.filter(element => !element.sameClient(connection))
     }
 
     private existsConnection(clientInfo: ClientInfo): boolean {
