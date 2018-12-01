@@ -1,8 +1,8 @@
 {
-  "name": "dicover-protocol",
-  "version": "1.0.0",
+  "name": "@ramclen/dicover-protocol",
+  "version": "0.3.0",
   "description": "protocol to find services in a local network",
-  "main": "UdpManager.js",
+  "main": "DiscoverClient.ts",
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -18,5 +18,5 @@
     "test:watch": "mocha --require ts-node/register --watch-extensions ts --watch test/**/*.Spec.ts "
   },
   "author": "Cristopher Lopez",
-  "license": "ISC"
+  "license": "Apache-2.0"
 }
