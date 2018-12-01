@@ -18,7 +18,11 @@ $ npm install @ramclen/discover-protocol
 ```js
 import DiscoverClient, { ClientDiscoverProtocol } from '@ramclen/discover-protocol/client';
 
-new DiscoverClient(new ClientDiscoverProtocol('ServiceName', 'ProtocolName')).run();
+new DiscoverClient(new ClientDiscoverProtocol('ServiceName', 'ProtocolName'))
+  .run()
+  .then(information => {
+    console.log(information.info);
+  });
 ```
 
 ### Server Side
