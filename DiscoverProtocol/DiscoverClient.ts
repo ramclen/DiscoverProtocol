@@ -1,6 +1,6 @@
 import * as dgram from 'dgram';
 import { Socket } from 'dgram';
-import { messages, port, ProtocolSteps } from './ProtocolInformation';
+import { messages, port, ProtocolSteps, extractInformation } from './ProtocolInformation';
 import ClientInfo from './ClientInfo';
 import { AddressInfo } from 'net';
 
@@ -35,7 +35,6 @@ export default class DiscoverClient {
                 this.runProtocol(msg, rinfo)
             } else {
                 this.timeout.stop()
-                console.log('Protocol Finished')
             }
         })
     }
@@ -59,13 +58,13 @@ export default class DiscoverClient {
             this.timeout.refresh();
         }
 
+        let message;
+        if (this.clientDiscoverProtocol.checkStep(msg.toString(), serverInfo)) {
+            message = this.clientDiscoverProtocol.actionMap[msg.toString()](msg.toString(), serverInfo)
+        } else {
+            message = this.clientDiscoverProtocol.actionMap.default(msg.toString(), serverInfo)
+        }
         setTimeout(() => {
-            let message;
-            if (this.clientDiscoverProtocol.checkStep(msg.toString(), serverInfo)) {
-                message = this.clientDiscoverProtocol.actionMap[msg.toString()](msg.toString(), serverInfo)
-            } else {
-                message = this.clientDiscoverProtocol.actionMap.default(msg.toString(), serverInfo)
-            }
             console.log('sending package to: ')
             console.log(serverInfo.toString())
             console.log('message : ')
@@ -121,14 +120,14 @@ export class ClientDiscoverProtocol {
     public finish: boolean = false;
     public serverConnection: ClientInfo;
     private step: ProtocolSteps = ProtocolSteps.DISCOVER;
-    private name: string;
+    private name: string = 'DISCOVER';
     private id: string;
     public actionMap: any;
     private expectedStep: any;
+    private result: any;
 
-    constructor(id: string, serviceName: string) {
+    constructor(id: string) {
         this.id = id;
-        this.name = serviceName;
         this.serverConnection = new ClientInfo(undefined, port.server, ProtocolSteps.DISCOVER);
         this.buildMaps()
     }
@@ -146,6 +145,10 @@ export class ClientDiscoverProtocol {
 
     public isFinished(): boolean {
         return this.step === ProtocolSteps.ACK
+    }
+
+    public getResult(): any {
+        return this.result;
     }
 
     public connect(): string {
@@ -180,7 +183,11 @@ export class ClientDiscoverProtocol {
     }
 
     private default(msg: string, clientInfo: ClientInfo): string {
-        return this.executeProtocolStep(messages.common.ACK(this.name), clientInfo, ProtocolSteps.REQUEST_INFORMATION);
+        const message = this.executeProtocolStep(messages.common.ACK(this.name), clientInfo, ProtocolSteps.REQUEST_INFORMATION);
+        if (this.step === ProtocolSteps.ACK) {
+            this.result = JSON.parse(extractInformation(msg, this.name));
+        }
+        return message;
     }
 
     private finishProtocol(msg: string, clientInfo: ClientInfo): string {

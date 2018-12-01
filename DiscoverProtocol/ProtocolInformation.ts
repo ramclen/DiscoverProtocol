@@ -32,3 +32,7 @@ export enum ProtocolSteps {
 function formatMessage(message: string, serviceName: string): string {
     return `${protocol}:${message}:${serviceName}`
 }
+
+export function extractInformation(message: string, serviceName: string): string {
+    return message.replace(`${protocol}:INFO`, '').replace(`:${serviceName}`, '')
+}
