@@ -13,6 +13,14 @@ $ npm install @ramclen/discover-protocol
 
 ## Usage
 
+### Server Side
+
+```js
+import UDPServer, { ServerDiscoverProtocol } from '@ramclen/discover-protocol/server';
+
+new UDPServer(new ServerDiscoverProtocol('ServiceName', {info: 'content'}) ).run();
+```
+
 ### Client Side
 
 ```js
@@ -25,10 +33,4 @@ new DiscoverClient(new ClientDiscoverProtocol('ServiceName', 'ProtocolName'))
   });
 ```
 
-### Server Side
 
-```js
-import UDPServer, { ServerDiscoverProtocol } from '@ramclen/discover-protocol/server';
-
-new UDPServer(new ServerDiscoverProtocol('ServiceName', {info: 'content'}) ).run();
-```
