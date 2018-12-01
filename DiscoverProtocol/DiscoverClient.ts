@@ -21,22 +21,33 @@ export default class DiscoverClient {
         })
     }
 
-    run(): void {
-        this.connection.on('listening', () => {
-            const address = this.connection.address();
-            console.log('UDP Client listening on ' + address);
-            this.connection.setBroadcast(true);
-        });
-
-        this.process = this.runDiscoverProcess()
-
-        this.connection.on('message', (msg, rinfo) => {
-            if (!this.clientDiscoverProtocol.isFinished()) {
-                this.runProtocol(msg, rinfo)
-            } else {
-                this.timeout.stop()
-            }
+    run(): Promise<any> {
+        return new Promise(resolve => {
+            this.openConnection(this.connection);
+            this.process = this.runDiscoverProcess()
+            this.listenProtocol(this.connection, resolve);
         })
+    }
+
+    private listenProtocol(connection: Socket, finishCallback: Function): void {
+        connection.on('message', (msg, rinfo) => {
+            if (!this.clientDiscoverProtocol.isFinished()) {
+                this.runProtocol(msg, rinfo);
+            } else {
+                this.timeout.stop();
+                this.connection.close()
+                console.log('Protocol Finished');
+                finishCallback(this.clientDiscoverProtocol.getResult())
+            }
+        });
+    }
+
+    private openConnection(connection: Socket): void {
+        connection.on('listening', () => {
+            const address = <AddressInfo> connection.address();
+            console.log(`UDP Client listening on ${address.address}:${address.port}`);
+            connection.setBroadcast(true);
+        });
     }
 
     private runProtocol(msg: Buffer, rinfo: AddressInfo): void {
